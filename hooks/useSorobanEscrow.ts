@@ -189,6 +189,8 @@ export function useSorobanEscrow() {
   // Destructure mutateAsync to avoid recreating the callback when the
   // mutation result object reference changes (mutateAsync is stable).
   const { mutateAsync } = depositMutation;
+  
+  // deposit() - Shows preflight modal (for UI flows)
   const deposit = useCallback(
     (params: DepositParams) => {
       // Store params and show preflight modal
@@ -196,6 +198,14 @@ export function useSorobanEscrow() {
       setShowPreflightModal(true);
     },
     []
+  );
+
+  // depositDirect() - Bypasses modal and executes directly (for tests and programmatic use)
+  const depositDirect = useCallback(
+    async (params: DepositParams) => {
+      return mutateAsync(params);
+    },
+    [mutateAsync]
   );
 
   const confirmDeposit = useCallback(() => {
@@ -216,6 +226,7 @@ export function useSorobanEscrow() {
     isLoading: query.isLoading || isSwitching,
     error: query.error,
     deposit,
+    depositDirect,
     isDepositing: depositMutation.isPending,
     depositError: depositMutation.error,
     // Preflight modal state

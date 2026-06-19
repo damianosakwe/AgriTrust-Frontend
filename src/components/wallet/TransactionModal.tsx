@@ -150,6 +150,7 @@ function ReadyState({ simulation, feeDisplay, showDetails, onToggleDetails }: Re
   if (!result) return null;
 
   const usage = calculateResourceUsage(result);
+  if (!usage) return null;
 
   return (
     <div className="space-y-4">
