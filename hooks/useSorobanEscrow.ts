@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "@/components/providers/WalletContext";
 import * as txStateStore from "@/services/txStateStore";
 import { useCallback, useState } from "react";
-import { useCallback } from "react";
 import { useOptimisticMutation } from "@/src/hooks/useOptimisticMutation";
 
 /** A pending deposit that has been optimistically applied to the UI. */
@@ -197,9 +196,6 @@ export function useSorobanEscrow() {
       setShowPreflightModal(true);
     },
     []
-      return mutateAsync(params);
-    },
-    [mutateAsync]
   );
 
   const confirmDeposit = useCallback(() => {
