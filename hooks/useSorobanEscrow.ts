@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useWallet } from "@/components/providers/WalletContext";
 import * as txStateStore from "@/services/txStateStore";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 interface EscrowData {
   balance: string;
@@ -54,6 +54,8 @@ async function submitEscrowDeposit(
 
 export function useSorobanEscrow() {
   const { account, isSwitching } = useWallet();
+  const [showPreflightModal, setShowPreflightModal] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState<DepositParams | null>(null);
 
   const query = useQuery<EscrowData>({
     queryKey: ["soroban", "escrow", account],
@@ -124,10 +126,25 @@ export function useSorobanEscrow() {
 
   const deposit = useCallback(
     (params: DepositParams) => {
-      return depositMutation.mutateAsync(params);
+      // Store params and show preflight modal
+      setPendingDeposit(params);
+      setShowPreflightModal(true);
     },
-    [depositMutation]
+    []
   );
+
+  const confirmDeposit = useCallback(() => {
+    if (pendingDeposit) {
+      setShowPreflightModal(false);
+      depositMutation.mutate(pendingDeposit);
+      setPendingDeposit(null);
+    }
+  }, [pendingDeposit, depositMutation]);
+
+  const cancelDeposit = useCallback(() => {
+    setShowPreflightModal(false);
+    setPendingDeposit(null);
+  }, []);
 
   return {
     escrowData: query.data,
@@ -136,5 +153,10 @@ export function useSorobanEscrow() {
     deposit,
     isDepositing: depositMutation.isPending,
     depositError: depositMutation.error,
+    // Preflight modal state
+    showPreflightModal,
+    pendingDeposit,
+    confirmDeposit,
+    cancelDeposit,
   };
 }
