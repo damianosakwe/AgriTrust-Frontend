@@ -23,29 +23,29 @@ describe('feeFormatter', () => {
 
   describe('formatStroops', () => {
     it('should format stroops to XLM correctly', () => {
-      expect(formatStroops(10_000_000n)).toBe('1.0000000');
-      expect(formatStroops(5_000_000n)).toBe('0.5000000');
-      expect(formatStroops(1n)).toBe('0.0000001');
-      expect(formatStroops(0n)).toBe('0.0000000');
+      expect(formatStroops(BigInt(10_000_000))).toBe('1.0000000');
+      expect(formatStroops(BigInt(5_000_000))).toBe('0.5000000');
+      expect(formatStroops(BigInt(1))).toBe('0.0000001');
+      expect(formatStroops(BigInt(0))).toBe('0.0000000');
     });
 
     it('should handle large values', () => {
-      expect(formatStroops(100_000_000_000n)).toBe('10000.0000000');
+      expect(formatStroops(BigInt(100_000_000_000))).toBe('10000.0000000');
     });
   });
 
   describe('formatStroopsWithLabel', () => {
     it('should format with XLM label', () => {
-      expect(formatStroopsWithLabel(10_000_000n)).toBe('1.0000000 XLM');
-      expect(formatStroopsWithLabel(5_000_000n)).toBe('0.5000000 XLM');
+      expect(formatStroopsWithLabel(BigInt(10_000_000))).toBe('1.0000000 XLM');
+      expect(formatStroopsWithLabel(BigInt(5_000_000))).toBe('0.5000000 XLM');
     });
   });
 
   describe('stroopsToXlm', () => {
     it('should convert stroops to XLM number', () => {
-      expect(stroopsToXlm(10_000_000n)).toBe(1);
-      expect(stroopsToXlm(5_000_000n)).toBe(0.5);
-      expect(stroopsToXlm(1n)).toBe(0.0000001);
+      expect(stroopsToXlm(BigInt(10_000_000))).toBe(1);
+      expect(stroopsToXlm(BigInt(5_000_000))).toBe(0.5);
+      expect(stroopsToXlm(BigInt(1))).toBe(0.0000001);
     });
   });
 
@@ -123,7 +123,7 @@ describe('feeFormatter', () => {
 
   describe('formatStroopsAsUsd', () => {
     it('should format stroops as USD with provided rate', async () => {
-      const usd = await formatStroopsAsUsd(10_000_000n, 0.12);
+      const usd = await formatStroopsAsUsd(BigInt(10_000_000), 0.12);
       expect(usd).toBe('0.1200');
     });
 
@@ -135,19 +135,19 @@ describe('feeFormatter', () => {
         }),
       });
 
-      const usd = await formatStroopsAsUsd(10_000_000n);
+      const usd = await formatStroopsAsUsd(BigInt(10_000_000));
       expect(usd).toBe('0.1200');
     });
 
     it('should handle zero stroops', async () => {
-      const usd = await formatStroopsAsUsd(0n, 0.12);
+      const usd = await formatStroopsAsUsd(BigInt(0), 0.12);
       expect(usd).toBe('0.0000');
     });
   });
 
   describe('formatStroopsDual', () => {
     it('should format with both XLM and USD', async () => {
-      const formatted = await formatStroopsDual(10_000_000n, 0.12);
+      const formatted = await formatStroopsDual(BigInt(10_000_000), 0.12);
       expect(formatted).toBe('1.0000000 XLM ($0.1200)');
     });
 
@@ -159,7 +159,7 @@ describe('feeFormatter', () => {
         }),
       });
 
-      const formatted = await formatStroopsDual(5_000_000n);
+      const formatted = await formatStroopsDual(BigInt(5_000_000));
       expect(formatted).toContain('0.5000000 XLM');
       expect(formatted).toContain('$0.0500');
     });

@@ -40,7 +40,7 @@ describe('Escrow Deposit Integration', () => {
     
     // Mock successful simulation by default
     const mockSimulationResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -277,3 +277,4 @@ describe('Escrow Deposit Integration', () => {
     expect(depositButton).toBeDisabled();
   });
 });
+

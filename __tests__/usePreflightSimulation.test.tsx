@@ -37,7 +37,7 @@ describe('usePreflightSimulation', () => {
 
   it('should auto-simulate when autoSimulate is true', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -75,7 +75,7 @@ describe('usePreflightSimulation', () => {
 
   it('should handle manual simulation', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -164,7 +164,7 @@ describe('usePreflightSimulation', () => {
 
   it('should handle exchange rate fetch failure gracefully', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -195,7 +195,7 @@ describe('usePreflightSimulation', () => {
 
   it('should reset state correctly', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -230,7 +230,7 @@ describe('usePreflightSimulation', () => {
 
   it('should pass correct parameters to simulateTransaction', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -270,3 +270,4 @@ describe('usePreflightSimulation', () => {
     );
   });
 });
+

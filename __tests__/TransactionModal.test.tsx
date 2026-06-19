@@ -59,7 +59,7 @@ describe('TransactionModal', () => {
 
   it('should display simulation results', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -163,7 +163,7 @@ describe('TransactionModal', () => {
   it('should call onConfirm when Confirm button is clicked', async () => {
     const mockOnConfirm = vi.fn();
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -226,7 +226,7 @@ describe('TransactionModal', () => {
 
   it('should toggle details view', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -284,7 +284,7 @@ describe('TransactionModal', () => {
 
   it('should show ledger entry information', async () => {
     const mockResult = {
-      minResourceFee: 1000000n,
+      minResourceFee: BigInt(1000000),
       instructions: 5000000,
       cpuInstructions: 5000000,
       readBytes: 1024,
@@ -309,3 +309,4 @@ describe('TransactionModal', () => {
     });
   });
 });
+

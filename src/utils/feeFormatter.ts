@@ -4,7 +4,7 @@
  */
 
 // 1 XLM = 10,000,000 stroops
-const STROOPS_PER_XLM = 10_000_000n;
+const STROOPS_PER_XLM = BigInt(10_000_000);
 
 // Exchange rate cache
 interface ExchangeRateCache {

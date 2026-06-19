@@ -60,7 +60,11 @@ export function TransactionModal({
     if (simulation.result && simulation.exchangeRate) {
       formatStroopsDual(simulation.result.minResourceFee, simulation.exchangeRate)
         .then(setFeeDisplay)
-        .catch(() => setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM'));
+        .catch(() => {
+          if (simulation.result) {
+            setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM');
+          }
+        });
     } else if (simulation.result) {
       setFeeDisplay(formatStroops(simulation.result.minResourceFee) + ' XLM');
     }
