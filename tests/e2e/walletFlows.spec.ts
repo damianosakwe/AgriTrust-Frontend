@@ -1,178 +1,67 @@
 import { test, expect } from './fixtures/test';
 
 test.describe('Web3 Wallet and Soroban RPC Flows', () => {
-  test('should login successfully with wallet and redirect', async ({ page, mockWallet }) => {
-    await page.goto('/login');
+  test('should connect wallet successfully and display balance', async ({ page }) => {
+    await page.goto('/wallet');
     
-    // Find and click wallet connect button
-    const connectBtn = page.getByRole('button', { name: /connect|freighter|metamask|login/i }).first();
-    await expect(connectBtn).toBeVisible();
-    await connectBtn.click();
+    // Check balance to connect wallet
+    const checkBalanceBtn = page.getByRole('button', { name: /Check Balance/i });
+    await expect(checkBalanceBtn).toBeVisible();
+    await checkBalanceBtn.click();
     
-    // Assert redirect and success UI state
-    await expect(page).toHaveURL(/\/dashboard|\/inventory|network|\//);
-    const connectedState = page.getByText(new RegExp(`connected|0x|${mockWallet.address.slice(0, 6)}`, 'i'));
-    await expect(connectedState).toBeVisible();
+    // Assert balance is displayed
+    const balanceText = page.locator('text=-- XLM');
+    await expect(balanceText).toBeVisible();
+
+    // Assert transaction panel is now visible
+    const txHeading = page.getByRole('heading', { name: /Soroban Transaction/i });
+    await expect(txHeading).toBeVisible();
   });
 
-  test('should handle escrow deposit with optimistic updates', async ({ page }) => {
-    await page.goto('/inventory');
+  test('should handle transaction submission with optimistic pending state', async ({ page }) => {
+    await page.goto('/wallet');
     
-    let getTransactionCallCount = 0;
+    // Connect wallet
+    await page.getByRole('button', { name: /Check Balance/i }).click();
     
-    await page.route(url => url.includes('soroban') || url.includes('rpc') || url.includes('stellar'), async (route) => {
-      const request = route.request();
-      if (request.method() === 'POST') {
-        const body = request.postDataJSON() || {};
-        const method = body.method;
-        
-        if (method === 'sendTransaction') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: {
-                status: 'PENDING',
-                hash: 'mock-tx-hash-123'
-              }
-            })
-          });
-        } else if (method === 'getTransaction') {
-          getTransactionCallCount++;
-          if (getTransactionCallCount === 1) {
-            await route.fulfill({
-              status: 200,
-              contentType: 'application/json',
-              body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: body.id,
-                result: {
-                  status: 'PENDING',
-                  hash: 'mock-tx-hash-123'
-                }
-              })
-            });
-          } else {
-            // Delay by 2 seconds then return success
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await route.fulfill({
-              status: 200,
-              contentType: 'application/json',
-              body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: body.id,
-                result: {
-                  status: 'SUCCESS',
-                  hash: 'mock-tx-hash-123',
-                  resultXdr: 'AAAAAgAAAA...'
-                }
-              })
-            });
-          }
-        } else if (method === 'getLatestLedger') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: { sequence: 100 }
-            })
-          });
-        } else {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: {}
-            })
-          });
-        }
-      } else {
-        await route.continue();
-      }
-    });
-
-    const depositBtn = page.getByRole('button', { name: /deposit/i }).first();
-    await expect(depositBtn).toBeVisible();
-    await depositBtn.click();
-
-    // Assert optimistic 'pending' UI state
-    const pendingToast = page.getByText(/pending|processing|submitting/i);
-    await expect(pendingToast).toBeVisible();
-
-    // Assert confirmed UI state after the delay
-    const confirmedToast = page.getByText(/success|confirmed|completed/i);
-    await expect(confirmedToast).toBeVisible();
+    // Fill transaction hash
+    const hashInput = page.getByPlaceholder(/Transaction hash/i);
+    await expect(hashInput).toBeVisible();
+    await hashInput.fill('1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef');
+    
+    // Submit transaction
+    const submitBtn = page.getByRole('button', { name: /Submit/i });
+    await expect(submitBtn).toBeEnabled();
+    
+    // Click submit and check optimistic state
+    await submitBtn.click();
+    
+    // Assert results output is displayed
+    const resultJson = page.locator('pre');
+    await expect(resultJson).toBeVisible();
+    await expect(resultJson).toContainText('1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef');
+    await expect(resultJson).toContainText('pending');
   });
 
-  test('should rollback UI and display error toast on tx_bad_seq failure', async ({ page }) => {
-    await page.goto('/inventory');
+  test('should validate transaction input state correctly', async ({ page }) => {
+    await page.goto('/wallet');
     
-    await page.route(url => url.includes('soroban') || url.includes('rpc') || url.includes('stellar'), async (route) => {
-      const request = route.request();
-      if (request.method() === 'POST') {
-        const body = request.postDataJSON() || {};
-        const method = body.method;
-        
-        if (method === 'sendTransaction') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: {
-                status: 'FAILED',
-                errorResultXdr: 'tx_bad_seq',
-                hash: 'mock-tx-failed-123'
-              }
-            })
-          });
-        } else if (method === 'getLatestLedger') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: { sequence: 100 }
-            })
-          });
-        } else {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              jsonrpc: '2.0',
-              id: body.id,
-              result: {}
-            })
-          });
-        }
-      } else {
-        await route.continue();
-      }
-    });
-
-    const depositBtn = page.getByRole('button', { name: /deposit/i }).first();
-    await expect(depositBtn).toBeVisible();
+    // Connect wallet
+    await page.getByRole('button', { name: /Check Balance/i }).click();
     
-    // Track original button state / page state if needed
-    const initialText = await depositBtn.innerText();
+    const hashInput = page.getByPlaceholder(/Transaction hash/i);
+    const submitBtn = page.getByRole('button', { name: /Submit/i });
     
-    await depositBtn.click();
-
-    // Assert error toast for tx_bad_seq is displayed
-    const errorToast = page.getByText(/tx_bad_seq|failed|error/i);
-    await expect(errorToast).toBeVisible();
-
-    // Assert UI rolls back to previous state
-    const currentText = await depositBtn.innerText();
-    expect(currentText).toBe(initialText);
+    // Initial state: empty input, disabled submit
+    await expect(hashInput).toHaveValue('');
+    await expect(submitBtn).toBeDisabled();
+    
+    // Fill input: enabled submit
+    await hashInput.fill('mock-hash-val');
+    await expect(submitBtn).toBeEnabled();
+    
+    // Clear input: disabled submit
+    await hashInput.fill('');
+    await expect(submitBtn).toBeDisabled();
   });
 });

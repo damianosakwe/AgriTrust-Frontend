@@ -14,18 +14,37 @@ export const test = base.extend<CustomFixtures>({
     await page.addInitScript((walletInfo) => {
       // Inject window.freighter
       (window as any).freighter = {
-        isConnected: async () => true,
-        getPublicKey: async () => walletInfo.address,
-        network: async () => 'TESTNET',
-        signTransaction: async (xdr: string) => xdr,
-        signBlob: async (blob: string) => walletInfo.signatureHex,
-        signAuthEntry: async (entry: string) => walletInfo.signatureHex
+        isConnected: async () => {
+          console.log('CALL freighter.isConnected');
+          return true;
+        },
+        getPublicKey: async () => {
+          console.log('CALL freighter.getPublicKey');
+          return walletInfo.address;
+        },
+        network: async () => {
+          console.log('CALL freighter.network');
+          return 'TESTNET';
+        },
+        signTransaction: async (xdr: string) => {
+          console.log('CALL freighter.signTransaction', xdr);
+          return xdr;
+        },
+        signBlob: async (blob: string) => {
+          console.log('CALL freighter.signBlob', blob);
+          return walletInfo.signatureHex;
+        },
+        signAuthEntry: async (entry: string) => {
+          console.log('CALL freighter.signAuthEntry', entry);
+          return walletInfo.signatureHex;
+        }
       };
 
       // Inject window.ethereum (MetaMask)
       const mockEthereum = {
         isMetaMask: true,
         request: async ({ method, params }: { method: string; params?: any[] }) => {
+          console.log('CALL ethereum.request', method, params);
           switch (method) {
             case 'eth_requestAccounts':
             case 'eth_accounts':
@@ -40,8 +59,12 @@ export const test = base.extend<CustomFixtures>({
               throw new Error(`Unsupported method: ${method}`);
           }
         },
-        on: (event: string, handler: (...args: any[]) => void) => {},
-        removeListener: (event: string, handler: (...args: any[]) => void) => {}
+        on: (event: string, handler: (...args: any[]) => void) => {
+          console.log('CALL ethereum.on', event);
+        },
+        removeListener: (event: string, handler: (...args: any[]) => void) => {
+          console.log('CALL ethereum.removeListener', event);
+        }
       };
       (window as any).ethereum = mockEthereum;
     }, {
